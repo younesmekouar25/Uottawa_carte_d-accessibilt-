@@ -1,0 +1,51 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "TBT",
+      "properties": {
+        "name": "Tabaret Hall",
+        "code": "TBT",
+        "about": "Historic central administration building.",
+        "hours": "08:00 – 21:00",
+        "phone": "+1 613 562 5700",
+        "website": "https://www.uottawa.ca",
+        "photo": "/img/tbt.jpg"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-75.68994, 45.42391],
+          [-75.68940, 45.42388],
+          [-75.68936, 45.42350],
+          [-75.68993, 45.42353],
+          [-75.68994, 45.42391]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "MRT",
+      "properties": {
+        "name": "Morisset Library",
+        "code": "MRT",
+        "about": "Main university library with study spaces.",
+        "hours": "08:00 – 21:00",
+        "phone": "+1 613 562 5800",
+        "website": "https://biblio.uottawa.ca",
+        "photo": "/img/mrt.jpg"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-75.68380, 45.42338],
+          [-75.68327, 45.42334],
+          [-75.68323, 45.42297],
+          [-75.68377, 45.42301],
+          [-75.68380, 45.42338]
+        ]]
+      }
+    }
+  ]
+}
