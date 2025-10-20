@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl, { Map, StyleSpecification } from "maplibre-gl";
 import Sidebar from "@/components/Sidebar";
+import BuildingsPanel from "@/components/panels/BuildingsPanel";
+import BuildingDetails from "@/components/panels/BuildingDetails";
 
 /* --------------------------- Limites & Polygone --------------------------- */
 
@@ -10,37 +12,22 @@ const CAMPUS_BOUNDS: [[number, number], [number, number]] = [
   [-75.6995, 45.4185],
   [-75.6735, 45.4305],
 ];
-
 const CAMPUS_POLYGON: number[][] = [
-  [-75.6938, 45.4279],
-  [-75.6909, 45.4279],
-  [-75.6891, 45.42755],
-  [-75.6876, 45.4267],
-  [-75.6865, 45.4254],
-  [-75.6858, 45.4242],
-  [-75.6846, 45.4237],
-  [-75.6831, 45.4237],
-  [-75.6817, 45.4227],
-  [-75.6816, 45.4218],
-  [-75.6821, 45.4208],
-  [-75.6845, 45.4201],
-  [-75.6869, 45.4201],
-  [-75.6902, 45.4203],
-  [-75.6925, 45.4217],
-  [-75.6936, 45.4239],
-  [-75.6938, 45.4256],
-  [-75.6938, 45.4279],
+  [-75.6938, 45.4279], [-75.6909, 45.4279], [-75.6891, 45.42755],
+  [-75.6876, 45.4267], [-75.6865, 45.4254], [-75.6858, 45.4242],
+  [-75.6846, 45.4237], [-75.6831, 45.4237], [-75.6817, 45.4227],
+  [-75.6816, 45.4218], [-75.6821, 45.4208], [-75.6845, 45.4201],
+  [-75.6869, 45.4201], [-75.6902, 45.4203], [-75.6925, 45.4217],
+  [-75.6936, 45.4239], [-75.6938, 45.4256], [-75.6938, 45.4279],
 ];
 
 /* ---------------------------- Utils géométriques ---------------------------- */
-
-function pointInRing([x, y]: [number, number], ring: number[][]): boolean {
+function pointInRing([x, y]: [number, number], ring: number[][]) {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const [xi, yi] = ring[i];
-    const [xj, yj] = ring[j];
-    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-    if (intersect) inside = !inside;
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    const inter = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (inter) inside = !inside;
   }
   return inside;
 }
@@ -279,6 +266,8 @@ export default function Home() {
           "text-variable-anchor": ["center", "top", "bottom", "left", "right"],
           "text-padding": 2,
           "text-allow-overlap": false,
+          "symbol-sort-key": ["-", ["get", "__pri"]], // priorité haute rendue en premier
+          "symbol-z-order": "auto",
         },
         paint: {
           "text-color": "#111",
