@@ -1,0 +1,18 @@
+# Core Django
+django>=5.0,<6.0
+
+# REST API
+djangorestframework>=3.14
+
+# CORS (pour que ton frontend Next.js puisse appeler ton API Django)
+django-cors-headers>=4.3
+
+# PostgreSQL (pour se connecter à la base depuis Docker)
+psycopg2-binary>=2.9
+
+# Outils utiles pour le développement
+python-dotenv>=1.0  # gérer les variables d'environnement .env
+gunicorn>=21.2      # serveur de prod (utile si tu déploies plus tard)
+
+# Optionnel (selon ton besoin)
+Pillow>=10.0        # si tu veux gérer des images (logos, photos de bâtiments)
