@@ -8,6 +8,7 @@ import {
   Navigation2,
   TriangleAlert,
   Newspaper,
+  Building,
 } from "lucide-react";
 
 type Item = {
@@ -26,6 +27,8 @@ const ITEMS: Item[] = [
   { id: "navigate", label: "Navigate", icon: <Navigation2 size={22} /> },
   { id: "alerts", label: "Alerts", icon: <TriangleAlert size={22} /> },
   { id: "events", label: "Events & News", icon: <Newspaper size={22} /> },
+
+ 
 ];
 
 export default function Sidebar({
@@ -38,6 +41,7 @@ export default function Sidebar({
   const [current, setCurrent] = useState(active ?? "buildings");
 
   const handleClick = (id: string) => {
+    // si tu veux faire un toggle (cliquer 2x pour fermer) tu peux tester ici
     setCurrent(id);
     onSelect?.(id);
   };
@@ -57,7 +61,7 @@ export default function Sidebar({
       </button>
 
       {/* Liste d’icônes */}
-      <div className="flex-1 flex flex-col items-center gap-4">
+      <div className="flex-1 flex flex-col items-center gap-4 overflow-y-auto">
         {ITEMS.map((it) => {
           const isActive = current === it.id;
           return (
@@ -69,7 +73,9 @@ export default function Sidebar({
               aria-current={isActive ? "page" : undefined}
             >
               <span>{it.icon}</span>
-              <span className="text-[11px] font-medium">{it.label}</span>
+              <span className="text-[11px] font-medium text-center leading-tight">
+                {it.label}
+              </span>
             </button>
           );
         })}
