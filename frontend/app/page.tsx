@@ -155,7 +155,8 @@ function reproject3857to4326(fc: any): GeoJSON.FeatureCollection {
         coordinates: convert(f.geometry.coordinates),
       },
     })),
-  } as GeoJSON.FeatureCollection;
+  } 
+
 }
 
 /* --------------------------------- Types --------------------------------- */
@@ -667,7 +668,49 @@ export default function Home() {
         },
       });
     }
+ 
 
+
+  /* ------------------ LOAD ACCESSIBILITY POINTS ------------------ */
+     {
+      const url2 = `/data/ucu-level-${level}-pointaccessible.geojson`;
+      const res2 = await fetch(url2);
+
+      let access = null;
+      if (res2.ok) {
+        let fc2 = await res2.json();
+        access = fc2?.crs?.properties?.name?.includes("3857")
+          ? reproject3857to4326(fc2)
+          : fc2;
+      }
+
+      if (access) {
+        if (!map.getSource("indoor-access")) {
+          map.addSource("indoor-access", { type: "geojson", data: access });
+
+          map.addLayer({
+            id: "indoor-access",
+            type: "symbol",
+            source: "indoor-access",
+            layout: {
+              "icon-image": [
+                "match",
+                ["get", "type"],
+                "elevator", "elevator",
+                "stairs", "stairs",
+                "toilet", "toilet_access",
+                "default_marker"
+              ],
+              "icon-size": 0.09,
+              "icon-anchor": "center"
+            }
+          });
+
+        } else {
+          (map.getSource("indoor-access") as maplibregl.GeoJSONSource).setData(access);
+        }
+      }
+    }
     // 2) Murs (niveau 0 uniquement)
     if (level === 0) {
       try {
@@ -712,62 +755,63 @@ export default function Home() {
       }
     }
 
-    // 3) Points d’accessibilité
-    try {
-      const accRes = await fetch("/data/pointaccessible.geojson");
-      if (accRes.ok) {
-        let accFc: any = await accRes.json();
-        if (accFc?.crs?.properties?.name?.includes("3857")) {
-          accFc = reproject3857to4326(accFc);
-        }
-
-        const filteredFeatures = accFc.features.filter(
-          (f: any) =>
-            !f.properties?.floor || f.properties.floor === String(level)
-        );
-
-        const accData: GeoJSON.FeatureCollection = {
-          type: "FeatureCollection",
-          features: filteredFeatures,
-        };
-
-        if (!map.getSource(INDOOR_ACCESS_SRC)) {
-          map.addSource(INDOOR_ACCESS_SRC, {
-            type: "geojson",
-            data: accData,
-          });
-
-          map.addLayer({
-            id: "indoor-access",
-            type: "symbol",
-            source: INDOOR_ACCESS_SRC,
-            layout: {
-             "icon-image": [
-  "match",
-  ["get", "type"],
-  "elevator", "elevator",
-  "stairs", "stairs",
-  "toilet", "toilet_access",
-  /* fallback */
-  "elevator"
-],
-
-              "icon-size": 0.25,
-              "icon-anchor": "center",
-              "icon-allow-overlap": true,
-            },
-          });
-        } else {
-          (
-            map.getSource(INDOOR_ACCESS_SRC) as maplibregl.GeoJSONSource
-          ).setData(accData);
-        }
-      } else {
-        console.warn("pointaccessible.geojson introuvable");
-      }
-    } catch (e) {
-      console.warn("Erreur chargement points accessibilité:", e);
+   // 3) Points d’accessibilité (elevator, toilet, stairs)
+try {
+  const accRes = await fetch("/data/pointaccessible.geojson");
+  if (accRes.ok) {
+    let accFc: any = await accRes.json();
+    if (accFc?.crs?.properties?.name?.includes("3857")) {
+      accFc = reproject3857to4326(accFc);
     }
+
+    // filtre selon l’étage
+    const filteredFeatures = accFc.features.filter(
+      (f: any) =>
+        !f.properties?.floor || f.properties.floor === String(level)
+    );
+
+    const accData: GeoJSON.FeatureCollection = {
+      type: "FeatureCollection",
+      features: filteredFeatures,
+    };
+
+    if (!map.getSource(INDOOR_ACCESS_SRC)) {
+      map.addSource(INDOOR_ACCESS_SRC, {
+        type: "geojson",
+        data: accData,
+      });
+
+      map.addLayer({
+        id: "indoor-access",
+        type: "symbol",
+        source: INDOOR_ACCESS_SRC,
+        layout: {
+          "icon-image": [
+            "match",
+            ["get", "type"],
+            "elevator", "elevator",
+            "stairs", "stairs",
+            "toilet", "toilet_access",
+            /* défaut */
+            "default_marker"
+          ],
+          "icon-size": 0.22,
+          "icon-anchor": "center",
+          "icon-allow-overlap": true,
+        },
+      });
+    } else {
+      (
+        map.getSource(INDOOR_ACCESS_SRC) as maplibregl.GeoJSONSource
+      ).setData(accData);
+    }
+  } else {
+    console.warn("pointaccessible.geojson introuvable");
+  }
+} catch (e) {
+  console.warn("Erreur chargement points accessibilité:", e);
+}
+
 
     // 4) Source pour la route indoor
     if (!map.getSource(INDOOR_ROUTE_SRC)) {
@@ -857,6 +901,23 @@ export default function Home() {
     });
     mapInstance.current = map;
 
+    const icons = [
+      { name: "elevator", url: "/images/elevator.png" },
+      { name: "stairs", url: "/images/stairs.png" },
+      { name: "toilet_access", url: "/images/toilet_access.png" },
+      { name: "default_marker", url: "/images/default_marker.png" }
+    ];
+
+    icons.forEach(({ name, url }) => {
+      const img = new Image();
+      img.src = url;
+      img.onload = () => {
+        map.addImage(name, img, { pixelRatio: 2 });
+        console.log("Icon loaded:", name);
+      };
+      img.onerror = () => console.error("Failed to load icon:", name);
+    });
+
     geolocateRef.current = new maplibregl.GeolocateControl({
       positionOptions: { enableHighAccuracy: true },
       trackUserLocation: true,
@@ -870,25 +931,34 @@ export default function Home() {
     });
 
     map.on("load", async () => {
-      const iconDefs: Record<string, string> = {
-        elevator: "/icons/elevator.png",
-        stairs: "/icons/stairs.png",
-        toilet_access: "/icons/toilet_access.png",
-        
-      };
+  /* ------------------ LOAD PNG ICONS (elevator / stairs / toilet) ------------------ */
 
-      Object.entries(iconDefs).forEach(([name, url]) => {
-        if (map.hasImage(name)) return;
-        map.loadImage(url, (err, image) => {
-          if (err || !image) {
-            console.error("Erreur loadImage pour", name, err);
-            return;
-          }
-          if (!map.hasImage(name)) {
-            map.addImage(name, image);
-          }
-        });
-      });
+const iconDefs: Record<string, string> = {
+  elevator: "/icons/elevator.png",
+  stairs: "/icons/stairs.png",
+  toilet_access: "/icons/toilet_access.png",
+  default_marker: "/icons/elevator.png",
+};
+
+for (const [name, url] of Object.entries(iconDefs)) {
+  if (map.hasImage(name)) continue;
+
+  map.loadImage(url, (err, image) => {
+    if (err || !image) {
+      console.error("Erreur loadImage pour", name, err);
+      return;
+    }
+    if (!map.hasImage(name)) {
+      map.addImage(name, image);
+      console.log("ICON OK:", name);
+    }
+  });
+}
+
+        
+
+
+    
 
       // Graphe indoor
       // Graphe indoor
@@ -1058,7 +1128,8 @@ try {
           hideIndoor();
         }
       };
-
+      
+  
       map.on("click", "b-fill", (e) =>
         clickHandler(e.features?.[0] as BFeature)
       );
