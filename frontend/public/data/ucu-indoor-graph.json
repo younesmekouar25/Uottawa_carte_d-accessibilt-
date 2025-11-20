@@ -1,0 +1,221 @@
+{
+  "nodes": [
+    {
+      "id": "j001",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.6839711, 45.42352447],
+      "label": ""
+    },
+    {
+      "id": "j002",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.6839563, 45.42354326],
+      "label": ""
+    },
+    {
+      "id": "j003",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68400319, 45.42354764],
+      "label": ""
+    },
+    {
+      "id": "j004",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68404571, 45.42351547],
+      "label": ""
+    },
+    {
+      "id": "j005",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68407346, 45.42350153],
+      "label": ""
+    },
+    {
+      "id": "j006",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68411954, 45.42349689],
+      "label": ""
+    },
+    {
+      "id": "j007",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68415157, 45.42347305],
+      "label": ""
+    },
+    {
+      "id": "j008",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68418976, 45.42345683],
+      "label": ""
+    },
+    {
+      "id": "j009",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68422958, 45.42342967],
+      "label": ""
+    },
+    {
+      "id": "j010",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68426077, 45.42340359],
+      "label": ""
+    },
+    {
+      "id": "j011",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68428137, 45.42336996],
+      "label": ""
+    },
+    {
+      "id": "j012",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68431345, 45.42334942],
+      "label": ""
+    },
+    {
+      "id": "j013",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68433439, 45.42331679],
+      "label": ""
+    },
+    {
+      "id": "j014",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68435759, 45.42330529],
+      "label": ""
+    },
+    {
+      "id": "j015",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68438573, 45.42327003],
+      "label": ""
+    },
+    {
+      "id": "j016",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.6844067, 45.42324469],
+      "label": ""
+    },
+    {
+      "id": "j017",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68443322, 45.42322515],
+      "label": ""
+    },
+    {
+      "id": "j018",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68447182, 45.4232048],
+      "label": ""
+    },
+    {
+      "id": "j019",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68450368, 45.42318132],
+      "label": ""
+    },
+    {
+      "id": "j020",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68452299, 45.42315075],
+      "label": ""
+    },
+    {
+      "id": "j021",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68454149, 45.42312294],
+      "label": ""
+    },
+    {
+      "id": "j022",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68456696, 45.42310692],
+      "label": ""
+    },
+    {
+      "id": "j023",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68459788, 45.42308341],
+      "label": ""
+    },
+    {
+      "id": "j024",
+      "kind": "junction",
+      "floor": 0,
+      "coord": [-75.68462721, 45.42306607],
+      "label": ""
+    }
+  ],
+  "edges": [
+    { "from": "j001", "to": "j002", "accessible": true },
+    { "from": "j001", "to": "j003", "accessible": true },
+    { "from": "j002", "to": "j001", "accessible": true },
+    { "from": "j002", "to": "j003", "accessible": true },
+    { "from": "j003", "to": "j002", "accessible": true },
+    { "from": "j003", "to": "j004", "accessible": true },
+    { "from": "j004", "to": "j003", "accessible": true },
+    { "from": "j004", "to": "j005", "accessible": true },
+    { "from": "j005", "to": "j004", "accessible": true },
+    { "from": "j005", "to": "j006", "accessible": true },
+    { "from": "j006", "to": "j005", "accessible": true },
+    { "from": "j006", "to": "j007", "accessible": true },
+    { "from": "j007", "to": "j006", "accessible": true },
+    { "from": "j007", "to": "j008", "accessible": true },
+    { "from": "j008", "to": "j007", "accessible": true },
+    { "from": "j008", "to": "j009", "accessible": true },
+    { "from": "j009", "to": "j008", "accessible": true },
+    { "from": "j009", "to": "j010", "accessible": true },
+    { "from": "j010", "to": "j009", "accessible": true },
+    { "from": "j010", "to": "j011", "accessible": true },
+    { "from": "j011", "to": "j010", "accessible": true },
+    { "from": "j011", "to": "j012", "accessible": true },
+    { "from": "j012", "to": "j011", "accessible": true },
+    { "from": "j012", "to": "j013", "accessible": true },
+    { "from": "j013", "to": "j012", "accessible": true },
+    { "from": "j013", "to": "j014", "accessible": true },
+    { "from": "j014", "to": "j013", "accessible": true },
+    { "from": "j014", "to": "j015", "accessible": true },
+    { "from": "j015", "to": "j014", "accessible": true },
+    { "from": "j015", "to": "j016", "accessible": true },
+    { "from": "j016", "to": "j015", "accessible": true },
+    { "from": "j016", "to": "j017", "accessible": true },
+    { "from": "j017", "to": "j016", "accessible": true },
+    { "from": "j017", "to": "j018", "accessible": true },
+    { "from": "j018", "to": "j017", "accessible": true },
+    { "from": "j018", "to": "j019", "accessible": true },
+    { "from": "j019", "to": "j018", "accessible": true },
+    { "from": "j019", "to": "j020", "accessible": true },
+    { "from": "j020", "to": "j019", "accessible": true },
+    { "from": "j020", "to": "j021", "accessible": true },
+    { "from": "j021", "to": "j020", "accessible": true },
+    { "from": "j021", "to": "j022", "accessible": true },
+    { "from": "j022", "to": "j021", "accessible": true },
+    { "from": "j022", "to": "j023", "accessible": true },
+    { "from": "j023", "to": "j022", "accessible": true },
+    { "from": "j023", "to": "j024", "accessible": true },
+    { "from": "j024", "to": "j023", "accessible": true }
+  ]
+}
