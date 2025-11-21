@@ -8,13 +8,7 @@
 { "type": "Feature", "properties": { "fid": 3, "type": "elevator", "floor": "0" }, "geometry": { "type": "Point", "coordinates": [ -8425082.155708452686667, 5688439.778902552090585 ] } },
 { "type": "Feature", "properties": { "fid": 4, "type": "elevator", "floor": "0" }, "geometry": { "type": "Point", "coordinates": [ -8425028.37535236030817, 5688386.400506583973765 ] } },
 { "type": "Feature", "properties": { "fid": 5, "type": "elevator", "floor": "0" }, "geometry": { "type": "Point", "coordinates": [ -8425058.696120388805866, 5688297.646323148161173 ] } },
-{ "type": "Feature", "properties": { "fid": 6, "type": "elevator", "floor": "0" }, "geometry": { "type": "Point", "coordinates": [ -8425095.068774688988924, 5688414.267807200551033 ] } },
-{ "type": "Feature", "properties": { "fid": 7, "type": "stairs", "floor": "0" }, "geometry": { "type": "Point", "coordinates": [ -8425031.891988966614008, 5688390.959866838529706 ] } },
-{ "type": "Feature", "properties": { "fid": 8, "type": null, "floor": null }, "geometry": { "type": "Point", "coordinates": [ -8425310.687668593600392, 5688393.045314134098589 ] } },
-{ "type": "Feature", "properties": { "fid": 9, "type": "stairs", "floor": "0" }, "geometry": { "type": "Point", "coordinates": [ -8425075.87039222382009, 5688438.986491318792105 ] } },
-{ "type": "Feature", "properties": { "fid": 10, "type": "stairs", "floor": "0" }, "geometry": { "type": "Point", "coordinates": [ -8425092.921990698203444, 5688445.569962193258107 ] } },
-{ "type": "Feature", "properties": { "fid": 11, "type": null, "floor": null }, "geometry": { "type": "Point", "coordinates": [ -8425071.04523965716362, 5688341.420270786620677 ] } },
-{ "type": "Feature", "properties": { "fid": 12, "type": null, "floor": null }, "geometry": { "type": "Point", "coordinates": [ -8425076.639656474813819, 5688272.919971941038966 ] } },
-{ "type": "Feature", "properties": { "fid": 13, "type": null, "floor": null }, "geometry": { "type": "Point", "coordinates": [ -8425093.631835037842393, 5688277.740652032196522 ] } }
+{ "type": "Feature", "properties": { "fid": 6, "type": "elevator", "floor": "0" }, "geometry": { "type": "Point", "coordinates": [ -8425095.068774688988924, 5688414.267807200551033 ] } }
+
 ]
 }

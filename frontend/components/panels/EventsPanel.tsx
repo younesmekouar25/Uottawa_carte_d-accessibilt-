@@ -26,6 +26,7 @@ type Props = {
   onClose: () => void;
 };
 
+/* ----------------------------- Labels & Styles ----------------------------- */
 function crowdLabel(level?: CrowdLevel) {
   switch (level) {
     case "high":
@@ -42,13 +43,13 @@ function crowdLabel(level?: CrowdLevel) {
 function crowdClasses(level?: CrowdLevel) {
   switch (level) {
     case "high":
-      return "bg-red-50 border-red-100 text-red-900";
+      return "bg-red-50 border-red-200 text-red-900";
     case "medium":
-      return "bg-amber-50 border-amber-100 text-amber-900";
+      return "bg-amber-50 border-amber-200 text-amber-900";
     case "low":
-      return "bg-emerald-50 border-emerald-100 text-emerald-900";
+      return "bg-emerald-50 border-emerald-200 text-emerald-900";
     default:
-      return "bg-slate-50 border-slate-100 text-slate-900";
+      return "bg-neutral-50 border-neutral-200 text-neutral-900";
   }
 }
 
@@ -61,16 +62,17 @@ function crowdPillClasses(level?: CrowdLevel) {
     case "low":
       return "bg-emerald-100 text-emerald-800";
     default:
-      return "bg-slate-100 text-slate-700";
+      return "bg-neutral-200 text-neutral-700";
   }
 }
 
+/* ----------------------------- Date formatting ----------------------------- */
 function formatDateRange(start?: string, end?: string): string | null {
   if (!start && !end) return null;
 
   try {
-    const startDate = start ? new Date(start) : null;
-    const endDate = end ? new Date(end) : null;
+    const s = start ? new Date(start) : null;
+    const e = end ? new Date(end) : null;
 
     const optsDate: Intl.DateTimeFormatOptions = {
       day: "2-digit",
@@ -81,146 +83,125 @@ function formatDateRange(start?: string, end?: string): string | null {
       minute: "2-digit",
     };
 
-    if (startDate && endDate) {
-      const sameDay =
-        startDate.toDateString() === endDate.toDateString();
+    if (s && e) {
+      const same = s.toDateString() === e.toDateString();
 
-      if (sameDay) {
-        return `${startDate.toLocaleDateString("fr-CA", optsDate)} · ${startDate.toLocaleTimeString(
+      if (same) {
+        return `${s.toLocaleDateString("fr-CA", optsDate)} — ${s.toLocaleTimeString(
           "fr-CA",
           optsTime
-        )} – ${endDate.toLocaleTimeString("fr-CA", optsTime)}`;
+        )} → ${e.toLocaleTimeString("fr-CA", optsTime)}`;
       }
 
-      return `${startDate.toLocaleDateString(
-        "fr-CA",
-        optsDate
-      )} ${startDate.toLocaleTimeString(
+      return `${s.toLocaleDateString("fr-CA", optsDate)} ${s.toLocaleTimeString(
         "fr-CA",
         optsTime
-      )} – ${endDate.toLocaleDateString(
+      )} — ${e.toLocaleDateString("fr-CA", optsDate)} ${e.toLocaleTimeString(
         "fr-CA",
-        optsDate
-      )} ${endDate.toLocaleTimeString("fr-CA", optsTime)}`;
+        optsTime
+      )}`;
     }
 
-    if (startDate && !endDate) {
-      return `Dès ${startDate.toLocaleDateString(
-        "fr-CA",
-        optsDate
-      )} ${startDate.toLocaleTimeString("fr-CA", optsTime)}`;
-    }
+    if (s && !e)
+      return `Dès ${s.toLocaleDateString("fr-CA", optsDate)} ${
+        s.toLocaleTimeString("fr-CA", optsTime)
+      }`;
 
-    if (!startDate && endDate) {
-      return `Jusqu’au ${endDate.toLocaleDateString(
-        "fr-CA",
-        optsDate
-      )} ${endDate.toLocaleTimeString("fr-CA", optsTime)}`;
-    }
+    if (!s && e)
+      return `Jusqu’au ${e.toLocaleDateString("fr-CA", optsDate)} ${
+        e.toLocaleTimeString("fr-CA", optsTime)
+      }`;
+
+    return null;
   } catch {
     return null;
   }
-
-  return null;
 }
 
+/* -------------------------------- Component -------------------------------- */
 export default function EventsPanel({ onClose }: Props) {
   const [events, setEvents] = useState<CampusEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    let cancel = false;
 
-    async function loadEvents() {
+    async function load() {
       try {
         setLoading(true);
         setError(null);
 
-        const res = await fetch("/data/events.json", {
-          cache: "no-store",
-        });
-
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
+        const res = await fetch("/data/events.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const json = (await res.json()) as EventsResponse;
-        if (!cancelled) {
-          setEvents(json.events ?? []);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setError("Impossible de charger les événements du campus.");
-        }
+        if (!cancel) setEvents(json.events ?? []);
+      } catch {
+        if (!cancel) setError("Impossible de charger les événements.");
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancel) setLoading(false);
       }
     }
 
-    loadEvents();
+    load();
     return () => {
-      cancelled = true;
+      cancel = true;
     };
   }, []);
 
+  /* -------------------------------- RENDER -------------------------------- */
   return (
     <aside
       className="
-        pointer-events-auto
-        absolute left-[90px] top-4
-        w-[380px] max-h-[80vh]
-        bg-white/95 border border-black/10 shadow-xl
-        rounded-2xl px-4 py-3
-        flex flex-col gap-3
-        overflow-y-auto
+        pointer-events-auto absolute left-[90px] top-4
+        w-[380px] max-h-[80vh] bg-white/95
+        border border-black/10 shadow-xl rounded-2xl
+        px-4 py-3 flex flex-col gap-3 overflow-y-auto
       "
-      aria-label="Événements impactant l’accessibilité"
+      aria-label="Événements du campus"
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-0.5">
-          <div className="text-sm font-semibold flex items-center gap-2">
+      {/* HEADER */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-sm font-semibold text-neutral-900">
             Événements & affluence
-            {events.length > 0 && !loading && !error && (
-              <span className="inline-flex items-center justify-center rounded-full bg-slate-100 text-slate-800 text-[10px] px-2 py-0.5 font-medium">
-                {events.length} à venir
-              </span>
-            )}
-          </div>
-          <p className="text-[11px] text-neutral-500">
-            Visualise les activités qui peuvent rendre les déplacements plus
-            difficiles (foule, kiosques, files d’attente).
+          </h2>
+          <p className="text-[11px] text-neutral-600 mt-0.5">
+            Déplacements potentiellement affectés par la foule, kiosques ou
+            activités spéciales.
           </p>
         </div>
+
         <button
           onClick={onClose}
-          className="rounded-lg px-2 py-1 text-xs hover:bg-neutral-100"
+          className="rounded-lg px-2 py-1 text-xs hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          aria-label="Fermer"
         >
           ✕
         </button>
       </div>
 
-      {/* Contenu */}
+      {/* LOADING */}
       {loading && (
-        <div className="text-xs text-neutral-500 italic py-4">
-          Chargement des événements…
-        </div>
+        <p className="text-xs text-neutral-500 italic py-4">Chargement…</p>
       )}
 
+      {/* ERROR */}
       {error && !loading && (
-        <div className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+        <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
           {error}
-        </div>
+        </p>
       )}
 
+      {/* EMPTY */}
       {!loading && !error && events.length === 0 && (
-        <div className="text-xs text-neutral-700 bg-neutral-50 border border-neutral-100 rounded-lg px-3 py-2">
-          Aucun événement à forte affluence enregistré dans les prochains
-          jours.
-        </div>
+        <p className="text-xs text-neutral-700 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2">
+          Aucun événement à forte affluence.
+        </p>
       )}
 
+      {/* LISTE DES ÉVÉNEMENTS */}
       <div className="space-y-2">
         {events.map((ev) => {
           const range = formatDateRange(ev.startsAt, ev.endsAt);
@@ -230,62 +211,57 @@ export default function EventsPanel({ onClose }: Props) {
             <article
               key={ev.id}
               className={`
-                border rounded-xl px-3 py-2.5 text-xs
-                flex flex-col gap-1.5
+                border rounded-xl px-3 py-2.5
+                flex flex-col gap-2 text-[12px] leading-tight
                 ${crowdClasses(level)}
               `}
             >
+              {/* TITRE + BADGE */}
               <div className="flex items-start justify-between gap-2">
-                <div className="font-semibold leading-snug">
-                  {ev.title}
-                </div>
+                <h3 className="font-semibold text-[13px]">{ev.title}</h3>
                 <span
-                  className={`
-                    inline-flex items-center h-5 px-2 rounded-full text-[10px] font-semibold
-                    ${crowdPillClasses(level)}
-                  `}
+                  className={`inline-flex items-center h-5 px-2 rounded-full text-[10px] font-medium ${crowdPillClasses(
+                    level
+                  )}`}
                 >
                   {crowdLabel(level)}
                 </span>
               </div>
 
+              {/* LIEU */}
               {(ev.buildingName || ev.buildingCode) && (
-                <div className="text-[11px] font-medium">
-                  {ev.buildingCode && (
-                    <span className="font-semibold">{ev.buildingCode}</span>
-                  )}
+                <p className="text-[11px] font-medium text-neutral-800">
+                  {ev.buildingCode && <span>{ev.buildingCode}</span>}
                   {ev.buildingCode && ev.buildingName && " · "}
                   {ev.buildingName && <span>{ev.buildingName}</span>}
                   {typeof ev.floor === "number" && (
-                    <span className="text-[11px] text-neutral-700">
-                      {" "}
-                      · étage {ev.floor}
-                    </span>
+                    <span className="text-neutral-700"> · étage {ev.floor}</span>
                   )}
-                </div>
+                </p>
               )}
 
-              <p className="text-[11px] leading-snug">{ev.description}</p>
+              {/* DESCRIPTION */}
+              <p className="text-[11px] text-neutral-900">{ev.description}</p>
 
+              {/* IMPACT ACCESSIBILITÉ */}
               {ev.impactsAccessibility && (
-                <div className="mt-1 text-[11px] text-red-800 font-medium">
+                <p className="text-[11px] font-medium text-red-800">
                   Impact accessibilité :{" "}
                   <span className="font-normal">
                     {ev.impactDescription ??
                       "Cet événement peut compliquer les déplacements pour certaines personnes."}
                   </span>
-                </div>
+                </p>
               )}
 
-              <div className="flex items-center justify-between mt-0.5">
+              {/* DATES */}
+              <div className="flex items-center justify-between">
                 {range && (
-                  <div className="text-[10px] text-neutral-700">
-                    {range}
-                  </div>
+                  <span className="text-[10px] text-neutral-700">{range}</span>
                 )}
-                <div className="text-[10px] text-neutral-500">
+                <span className="text-[10px] text-neutral-500">
                   Événement campus
-                </div>
+                </span>
               </div>
             </article>
           );

@@ -511,85 +511,123 @@ export default function Home() {
   }
 
   /* --------------------------- ROUTING (OSRM EXTÉRIEUR) --------------------------- */
-  async function buildRoute(profile: "foot" | "driving" | "cycling" = "foot") {
-    if (!start || !dest || !mapInstance.current) return;
+async function buildRoute(profile: "foot" | "wheelchair" = "foot") {
+  if (!start || !dest || !mapInstance.current) return;
 
-    const url =
-      `https://router.project-osrm.org/route/v1/${profile}/` +
-      `${start[0]},${start[1]};${dest[0]},${dest[1]}` +
-      `?overview=full&geometries=geojson&steps=true`;
+  const MAPBOX_TOKEN =
+    "pk.eyJ1IjoiY2htYXJvbmU5IiwiYSI6ImNtaThhM2pyeDBhZGUybHExcjdieDBtMHYifQ.EqViyIVl7A0cADhWCPSqZA";
 
-    const res = await fetch(url);
-    const data = await res.json();
-    if (!data.routes?.length) return;
+  // Toujours walking (Mapbox n’a pas de profil PMR)
+  const url =
+    `https://api.mapbox.com/directions/v5/mapbox/walking/` +
+    `${start[0]},${start[1]};${dest[0]},${dest[1]}` +
+    `?geometries=geojson&overview=full&steps=true&access_token=${MAPBOX_TOKEN}`;
 
-    const route = data.routes[0];
-    const gj = {
-      type: "FeatureCollection",
-      features: [
-        {
-          type: "Feature",
-          properties: {
-            distance: route.distance,
-            duration: route.duration,
-          },
-          geometry: route.geometry,
-        },
-      ],
-    };
-    (mapInstance.current!.getSource("route") as maplibregl.GeoJSONSource).setData(
-      gj
-    );
-
-    const out: NavStep[] = [];
-    for (const leg of route.legs || []) {
-      for (const s of leg.steps || []) {
-        const inst: string =
-          s.maneuver?.instruction || s.name || "Continue tout droit";
-
-        const lowered = inst.toLowerCase();
-        const notes: string[] = [];
-        let hasStairs = false;
-
-        if (
-          lowered.includes("stairs") ||
-          lowered.includes("steps") ||
-          lowered.includes("escaliers") ||
-          lowered.includes("escalier")
-        ) {
-          hasStairs = true;
-          notes.push("Présence possible d’escaliers");
-        }
-
-        out.push({
-          instruction: inst,
-          distance: s.distance,
-          hasStairs,
-          notes: notes.length ? notes : undefined,
-        });
-      }
-    }
-    setSteps(out);
-
-    const coords: [number, number][] = route.geometry.coordinates;
-    let minX = 999,
-      minY = 999,
-      maxX = -999,
-      maxY = -999;
-    for (const [x, y] of coords) {
-      if (x < minX) minX = x;
-      if (y < minY) minY = y;
-      if (x > maxX) maxX = x;
-      if (y > maxY) maxY = y;
-    }
-    mapInstance.current!.fitBounds(
-      [
-        [minX, minY],
-        [maxX, maxY],
-      ],
-      { padding: 80, duration: 500 }
-    );
+  const res = await fetch(url);
+  if (!res.ok) {
+    console.warn("Erreur API Mapbox");
+    return;
   }
+
+  const data = await res.json();
+  if (!data.routes || !data.routes.length) {
+    console.warn("Aucune route trouvée");
+    return;
+  }
+
+  const route = data.routes[0];
+
+  // --- Affichage de la route sur la carte ---
+  const gj = {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        properties: { profile, distance: route.distance, duration: route.duration },
+        geometry: route.geometry,
+      },
+    ],
+  };
+
+  const src = mapInstance.current.getSource("route") as maplibregl.GeoJSONSource;
+  src.setData(gj);
+
+  // --- Extraction des étapes ---
+  const stepsOut: NavStep[] = [];
+  let hasInaccessible = false;
+
+  for (const leg of route.legs || []) {
+    for (const step of leg.steps || []) {
+      const inst = step.maneuver?.instruction || "Continuez";
+      const low = inst.toLowerCase();
+
+      const hasStairs =
+        low.includes("stairs") ||
+        low.includes("escaliers") ||
+        low.includes("steps");
+
+      const notes: string[] = [];
+      if (hasStairs) notes.push("Escaliers détectés");
+
+      // PMR : supprimer les étapes impossibles
+      if (profile === "wheelchair" && hasStairs) {
+        hasInaccessible = true;
+        continue; // étape supprimée
+      }
+
+      stepsOut.push({
+        instruction: inst,
+        distance: step.distance,
+        hasStairs,
+        notes: notes.length ? notes : undefined,
+      });
+    }
+  }
+
+  // --- Message PMR en haut ---
+  if (profile === "wheelchair") {
+    if (hasInaccessible) {
+      stepsOut.unshift({
+        instruction:
+          "⚠️ Trajet non entièrement accessible – escaliers détectés et supprimés.",
+        distance: 0,
+        hasStairs: true,
+        notes: ["Attention : ce trajet nécessite un chemin alternatif"],
+      });
+    } else {
+      stepsOut.unshift({
+        instruction: "♿ Trajet annoncé comme accessible",
+        distance: 0,
+        hasStairs: false,
+        notes: ["Itinéraire sans escaliers détectés"],
+      });
+    }
+  }
+
+  setSteps(stepsOut);
+
+  // --- Fit bounds ---
+  const coords = route.geometry.coordinates;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+  for (const [x, y] of coords) {
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+  }
+
+  mapInstance.current.fitBounds(
+    [
+      [minX, minY],
+      [maxX, maxY],
+    ],
+    { padding: 80, duration: 500 }
+  );
+}
+
+
+
 
   /* --------------------------- INDOOR: charge étage --------------------------- */
   async function loadIndoorUCU(level: number, fit = true) {
@@ -684,32 +722,7 @@ export default function Home() {
           : fc2;
       }
 
-      if (access) {
-        if (!map.getSource("indoor-access")) {
-          map.addSource("indoor-access", { type: "geojson", data: access });
-
-          map.addLayer({
-            id: "indoor-access",
-            type: "symbol",
-            source: "indoor-access",
-            layout: {
-              "icon-image": [
-                "match",
-                ["get", "type"],
-                "elevator", "elevator",
-                "stairs", "stairs",
-                "toilet", "toilet_access",
-                "default_marker"
-              ],
-              "icon-size": 0.09,
-              "icon-anchor": "center"
-            }
-          });
-
-        } else {
-          (map.getSource("indoor-access") as maplibregl.GeoJSONSource).setData(access);
-        }
-      }
+    
     }
     // 2) Murs (niveau 0 uniquement)
     if (level === 0) {
@@ -780,7 +793,7 @@ try {
         type: "geojson",
         data: accData,
       });
-
+/*les insignes daccessibility on etais fais a ce niveau */
       map.addLayer({
         id: "indoor-access",
         type: "symbol",
@@ -795,7 +808,7 @@ try {
             /* défaut */
             "default_marker"
           ],
-          "icon-size": 0.22,
+          "icon-size": 0.09,
           "icon-anchor": "center",
           "icon-allow-overlap": true,
         },
@@ -903,9 +916,9 @@ try {
 
     const icons = [
       { name: "elevator", url: "/images/elevator.png" },
-      { name: "stairs", url: "/images/stairs.png" },
+      //{ name: "stairs", url: "/images/stairs.png" },
       { name: "toilet_access", url: "/images/toilet_access.png" },
-      { name: "default_marker", url: "/images/default_marker.png" }
+     // { name: "default_marker", url: "/images/default_marker.png" }
     ];
 
     icons.forEach(({ name, url }) => {
@@ -933,7 +946,7 @@ try {
     map.on("load", async () => {
   /* ------------------ LOAD PNG ICONS (elevator / stairs / toilet) ------------------ */
 
-const iconDefs: Record<string, string> = {
+/*const iconDefs: Record<string, string> = {
   elevator: "/icons/elevator.png",
   stairs: "/icons/stairs.png",
   toilet_access: "/icons/toilet_access.png",
@@ -953,7 +966,7 @@ for (const [name, url] of Object.entries(iconDefs)) {
       console.log("ICON OK:", name);
     }
   });
-}
+}*/
 
         
 
@@ -1177,6 +1190,7 @@ try {
       id: n.id,
       floor: n.floor,
       label: n.label || n.id,
+      kind: n.kind,
     }));
 
   // Onglet actif pour le sidebar (optionnel mais propre)
@@ -1260,6 +1274,7 @@ try {
           onSetStart={(p) => setStart(p)}
           onSetDest={(p) => setDest(p)}
           onRouteFoot={() => buildRoute("foot")}
+          onRouteWheelchair={() => buildRoute("wheelchair")}
           onClearRoute={() => {
             const src = mapInstance.current?.getSource(
               "route"
@@ -1282,7 +1297,7 @@ try {
             setDest(null);
           }}
           onClose={() => setShowNavigatePanel(false)}
-          // 🔥 nouveau : navigation indoor
+          //nouveau : navigation indoor
           indoorNodes={indoorNodesForUI}
           onIndoorRoute={(fromId: string, toId: string, accessible: boolean) =>
             buildIndoorRouteByIds(fromId, toId, accessible)
