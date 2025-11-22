@@ -43,13 +43,22 @@ export type Feature = {
 };
 type FC = { type: "FeatureCollection"; features: Feature[] };
 
+/* ------------------------------ Keyword list ------------------------------ */
+const UO_KEYWORDS = [
+  "uottawa", "university", "pavillon", "pavilion", "hall",
+  "tabaret", "stem", "crx", "dms", "fss", "simard", "minto",
+  "alexander", "lamoureux", "king edward", "cb", "ucu",
+  "residence", "90u", "hrez", "hrez", "louis", "pasteur",
+  "mcdonald", "macdonald", "columbia", "colonel by",
+];
+
 export default function BuildingsPanel({
   onSelect,
-  onMoreInfo,      // <-- NEW
+  onMoreInfo,
   limit = 150,
 }: {
   onSelect: (feature: Feature) => void;
-  onMoreInfo?: (feature: Feature) => void;  // <-- NEW
+  onMoreInfo?: (feature: Feature) => void;
   limit?: number;
 }) {
   const [raw, setRaw] = useState<FC | null>(null);
@@ -67,24 +76,27 @@ export default function BuildingsPanel({
     return () => { cancelled = true; };
   }, []);
 
-  /* --------------------- uOttawa filter + index --------------------- */
+  /* ---------------------- uOttawa filtering clean ---------------------- */
   const indexed = useMemo(() => {
     if (!raw) return [];
 
     const onlyUO = (raw.features || []).filter((f: any) => {
       const p = f.properties || {};
       const name = (p["name:fr"] || p["name:en"] || p.name || "").toLowerCase();
-      const op   = (p.operator || "").toLowerCase();
-      const inside = pointInPolygon(centroidOf(f), CAMPUS_POLYGON);
-      const text  = name.includes("university of ottawa") || name.includes("uottawa") || op.includes("university of ottawa");
-      return inside || text;
+      if (!name) return false;
+
+      const center = centroidOf(f);
+      const insideCampus = pointInPolygon(center, CAMPUS_POLYGON);
+      const hasKeyword = UO_KEYWORDS.some((k) => name.includes(k));
+
+      return insideCampus && hasKeyword;
     });
 
     const seen = new Set<string>();
     const dedup = onlyUO.filter((f) => {
       const p = f.properties || {};
-      const name = (p["name:fr"] || p["name:en"] || p.name || "Building").trim();
-      const code = (p.code || "").toString().trim();
+      const name = (p["name:fr"] || p["name:en"] || p.name || "").trim();
+      const code = (p.code || "").trim();
       const key = `${name}__${code}`;
       if (seen.has(key)) return false;
       seen.add(key);
@@ -96,8 +108,8 @@ export default function BuildingsPanel({
 
     const items = dedup.map((f, idx) => {
       const p = f.properties || {};
-      const name = (p["name:fr"] || p["name:en"] || p.name || "Building") as string;
-      const code = (p.code || name.slice(0, 3).toUpperCase()) as string;
+      const name = p["name:fr"] || p["name:en"] || p.name || "Building";
+      const code = p.code || name.slice(0, 4).toUpperCase();
       const key = norm([name, code, p.operator, p["name:short"], p.alt_name].filter(Boolean).join(" | "));
       return { id: f.id ?? `${idx}-${code}`, name, code, key, f };
     });
@@ -138,6 +150,7 @@ export default function BuildingsPanel({
     };
   }, [query, indexed, limit]);
 
+  /* ------------------------------ UI ------------------------------ */
   return (
     <aside className="absolute top-4 left-24 z-30 w-[420px] max-h-[84vh] bg-white/95 backdrop-blur-md border border-neutral-200 rounded-3xl shadow-xl overflow-hidden">
       <header className="px-4 py-3 border-b text-sm font-semibold flex items-center justify-between">
@@ -200,7 +213,7 @@ export default function BuildingsPanel({
       </div>
 
       <div className="px-4 py-2 text-[11px] text-neutral-500 border-t">
-        Showing up to {limit} matches. Type to narrow down.
+        Showing up to {limit} matches · Filter = Polygon + Keywords
       </div>
     </aside>
   );

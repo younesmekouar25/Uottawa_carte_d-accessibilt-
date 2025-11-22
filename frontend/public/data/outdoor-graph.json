@@ -1,0 +1,106 @@
+{
+  "nodes": [
+    { "id": "90U", "coord": [-75.6847471,45.4225278], "kind": "entrance" },
+    { "id": "FSS", "coord": [-75.6836371,45.4218535], "kind": "entrance" },
+    { "id": "MNT", "coord": [-75.68279920,45.42246353], "kind": "entrance" },
+    { "id": "Morisset_Accessible_Parking", "coord": [-75.6849223,45.4229561], "kind": "entrance" },
+    { "id": "Morisset_Library", "coord": [-75.6839266,45.4233280], "kind": "entrance" },
+    { "id": "SITE_front", "coord": [-75.6788618,45.4196629], "kind": "entrance" },
+    { "id": "Tabaret", "coord": [-75.6859985,45.4241487], "kind": "entrance" },
+    { "id": "crx_back", "coord": [-75.68135472,45.42179209], "kind": "entrance" },
+    { "id": "crx_front", "coord": [-75.68227486,45.42184736], "kind": "entrance" },
+    { "id": "crx_side", "coord": [-75.68230744,45.42237638], "kind": "entrance" },
+    { "id": "stem_back", "coord": [-75.68028020,45.41997247], "kind": "entrance" },
+    { "id": "stem_front", "coord": [-75.68065415,45.42046748], "kind": "entrance" },
+    { "id": "ucu_Dining_Hall", "coord": [-75.6838806,45.4228730], "kind": "entrance" },
+    { "id": "ucu_entrance", "coord": [-75.68394468,45.42365460], "kind": "entrance" },
+
+    { "id": "i1", "coord": [-75.6840554,45.4237358], "hidden": true },
+    { "id": "i2", "coord": [-75.6831647,45.4240919], "hidden": true },
+    { "id": "i3", "coord": [-75.6818660,45.4225574], "hidden": true },
+    { "id": "i4", "coord": [-75.6812112,45.4217918], "hidden": true },
+    { "id": "i5", "coord": [-75.6809660,45.4216099], "hidden": true },
+    { "id": "i6", "coord": [-75.6804276,45.4209543], "hidden": true },
+    { "id": "i7", "coord": [-75.6797744,45.4201756], "hidden": true },
+    { "id": "i8", "coord": [-75.6795882,45.4200177], "hidden": true },
+    { "id": "i9", "coord": [-75.6789659,45.4198815], "hidden": true },
+
+    { "id": "i10", "coord": [-75.6828849,45.4237386], "hidden": true },
+    { "id": "i11", "coord": [-75.6849803,45.4233480], "hidden": true },
+    { "id": "i12", "coord": [-75.6844825,45.4227627], "hidden": true },
+    { "id": "i13", "coord": [-75.6847942,45.4227475], "hidden": true },
+    { "id": "i14", "coord": [-75.6844208,45.4226626], "hidden": true },
+    { "id": "i15", "coord": [-75.6857066,45.4242454], "hidden": true },
+    { "id": "i16", "coord": [-75.6837749,45.4219247], "hidden": true },
+
+    { "id": "i17", "coord": [-75.68308077,45.42217768], "hidden": true },
+    { "id": "i18", "coord": [-75.6828512,45.4222854], "hidden": true },
+    { "id": "i19", "coord": [-75.68315630,45.42219762], "hidden": true },
+
+    { "id": "i20", "coord": [-75.6819907,45.4212913], "hidden": true },
+    { "id": "i21", "coord": [0,0], "hidden": true }
+  ],
+
+  "edges": [
+    { "from": "90U", "to": "i14" },
+
+    { "from": "FSS", "to": "i16" },
+
+    { "from": "MNT", "to": "i20" },
+
+    { "from": "Morisset_Accessible_Parking", "to": "i13" },
+    { "from": "Morisset_Library", "to": "i10" },
+
+    { "from": "SITE_front", "to": "i9" },
+
+    { "from": "Tabaret", "to": "i15" },
+
+    { "from": "crx_back", "to": "i4" },
+    { "from": "crx_side", "to": "i3" },
+
+    { "from": "stem_back", "to": "i7" },
+    { "from": "stem_front", "to": "i6" },
+
+    { "from": "ucu_Dining_Hall", "to": "i14" },
+    { "from": "ucu_entrance", "to": "i1" },
+
+    { "from": "i1", "to": "i2" },
+    { "from": "i1", "to": "i11" },
+
+    { "from": "i2", "to": "i10" },
+
+    { "from": "i3", "to": "i4" },
+
+    { "from": "i4", "to": "i5" },
+
+    { "from": "i5", "to": "i6" },
+    { "from": "i5", "to": "i21" },
+
+    { "from": "i6", "to": "i7" },
+
+    { "from": "i7", "to": "i8" },
+
+    { "from": "i8", "to": "i9" },
+
+    { "from": "i10", "to": "i3" },
+
+    { "from": "i11", "to": "i12" },
+    { "from": "i11", "to": "i15" },
+
+    { "from": "i12", "to": "i13" },
+    { "from": "i12", "to": "i14" },
+
+    { "from": "i14", "to": "i16" },
+
+    { "from": "i16", "to": "i17" },
+
+    { "from": "i17", "to": "i18" },
+
+    { "from": "i18", "to": "i19" },
+    { "from": "i18", "to": "i20" },
+{ "from": "i19", "to": "MNT" },
+   
+
+    { "from": "i20", "to": "i5" }
+  ]
+}

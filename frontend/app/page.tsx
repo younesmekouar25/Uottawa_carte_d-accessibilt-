@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import maplibregl, { Map, StyleSpecification } from "maplibre-gl";
+import maplibregl, { StyleSpecification } from "maplibre-gl";
 import Sidebar from "@/components/Sidebar";
 import BuildingsPanel from "@/components/panels/BuildingsPanel";
 import BuildingDetails from "@/components/panels/BuildingDetails";
@@ -39,6 +39,26 @@ type IndoorGraph = {
   nodes: IndoorNode[];
   edges: IndoorEdge[];
 };
+
+
+/* --------------------------- OUTDOOR GRAPH --------------------------- */
+type OutdoorNode = {
+  id: string;
+  coord: [number, number];
+  kind?: string;
+};
+
+type OutdoorEdge = {
+  from: string;
+  to: string;
+};
+
+type OutdoorGraph = {
+  nodes: OutdoorNode[];
+  edges: OutdoorEdge[];
+};
+
+
 
 /* --------------------------- Limites & Polygone --------------------------- */
 const CAMPUS_BOUNDS: [[number, number], [number, number]] = [
@@ -210,9 +230,15 @@ export default function Home() {
   const floorToCode = (n: number): "F0" | "F1" | "F2" => `F${n}` as any;
   const codeToFloor = (s: "F0" | "F1" | "F2"): number => Number(s.slice(1));
 
+  
+
   /* --------- Refs pour graph indoor + features de chaque étage --------- */
   const indoorGraphRef = useRef<IndoorGraph | null>(null);
+  const outdoorGraphRef = useRef<OutdoorGraph | null>(null);
+const [outdoorNodesList, setOutdoorNodesList] = useState([]);
   const indoorFCRef = useRef<Record<number, GeoJSON.FeatureCollection>>({});
+
+  
 
   /* --------------------------- Helpers indoor --------------------------- */
   const hideIndoor = () => {
@@ -510,105 +536,173 @@ export default function Home() {
     setSteps(newSteps);
   }
 
-  /* --------------------------- ROUTING (OSRM EXTÉRIEUR) --------------------------- */
-async function buildRoute(profile: "foot" | "wheelchair" = "foot") {
-  if (!start || !dest || !mapInstance.current) return;
 
-  const MAPBOX_TOKEN =
-    "pk.eyJ1IjoiY2htYXJvbmU5IiwiYSI6ImNtaThhM2pyeDBhZGUybHExcjdieDBtMHYifQ.EqViyIVl7A0cADhWCPSqZA";
 
-  // Toujours walking (Mapbox n’a pas de profil PMR)
-  const url =
-    `https://api.mapbox.com/directions/v5/mapbox/walking/` +
-    `${start[0]},${start[1]};${dest[0]},${dest[1]}` +
-    `?geometries=geojson&overview=full&steps=true&access_token=${MAPBOX_TOKEN}`;
 
-  const res = await fetch(url);
-  if (!res.ok) {
-    console.warn("Erreur API Mapbox");
+
+
+
+
+
+
+
+
+async function loadOutdoorGraph() {
+  try {
+    const res = await fetch("/data/outdoor-graph.json");
+    if (!res.ok) {
+      console.warn("outdoor-graph.json introuvable");
+      return;
+    }
+
+    const g = await res.json();
+
+    // 🔧 Conversion si EPSG:3857
+    g.nodes.forEach((n: any) => {
+      if (Math.abs(n.coord[0]) > 200) {
+        n.coord = mercatorToLonLat(n.coord);
+      }
+    });
+
+    // 📌 Stocker le graphe complet
+    outdoorGraphRef.current = g;
+
+    // 📌 Préparer la liste visible dans le NavigatePanel
+    setOutdoorNodesList(
+      g.nodes
+        .filter((n: any) => n.kind === "entrance") // seulement les entrées
+        .map((n: any) => ({
+          id: n.id,
+          label: n.id.replace(/_/g, " ").toUpperCase(),
+          coord: n.coord,
+        }))
+    );
+
+    console.log("Outdoor graph loaded:", g.nodes.length, "nodes");
+
+  } catch (e) {
+    console.warn("Erreur outdoor graph:", e);
+  }
+}
+function findClosestOutdoorNode(coord: [number, number]) {
+  const g = outdoorGraphRef.current;
+  if (!g) return null;
+
+  let best = null;
+  let bestDist = Infinity;
+
+  for (const n of g.nodes) {
+    const dx = n.coord[0] - coord[0];
+    const dy = n.coord[1] - coord[1];
+    const d = dx * dx + dy * dy;
+
+    if (d < bestDist) {
+      bestDist = d;
+      best = n;
+    }
+  }
+
+  return best;
+}
+
+
+
+
+function buildOutdoorRoute(
+  startCoord: [number, number],
+  destCoord: [number, number]
+) {
+  const map = mapInstance.current;
+  const g = outdoorGraphRef.current;
+
+  if (!map || !g) {
+    console.warn("Outdoor graph not ready");
     return;
   }
 
-  const data = await res.json();
-  if (!data.routes || !data.routes.length) {
-    console.warn("Aucune route trouvée");
+  const startNode = findClosestOutdoorNode(startCoord);
+  const destNode = findClosestOutdoorNode(destCoord);
+
+  if (!startNode || !destNode) {
+    console.warn("Outdoor nodes introuvables");
     return;
   }
 
-  const route = data.routes[0];
+  // adjacency
+  const adj: Record<string, string[]> = {};
+  for (const e of g.edges) {
+    if (!adj[e.from]) adj[e.from] = [];
+    if (!adj[e.to]) adj[e.to] = [];
+    adj[e.from].push(e.to);
+    adj[e.to].push(e.from);
+  }
 
-  // --- Affichage de la route sur la carte ---
-  const gj = {
+  // BFS
+  const q = [startNode.id];
+  const visited = new Set([startNode.id]);
+  const prev: Record<string, string | null> = { [startNode.id]: null };
+
+  let found = false;
+
+  while (q.length > 0) {
+    const cur = q.shift()!;
+    if (cur === destNode.id) {
+      found = true;
+      break;
+    }
+
+    for (const nb of adj[cur] || []) {
+      if (!visited.has(nb)) {
+        visited.add(nb);
+        prev[nb] = cur;
+        q.push(nb);
+      }
+    }
+  }
+
+  if (!found) {
+    console.warn("Aucun chemin outdoor trouvé");
+    return;
+  }
+
+  // reconstruct path
+  const path: string[] = [];
+  let cur: string | null = destNode.id;
+
+  while (cur) {
+    path.push(cur);
+    cur = prev[cur] ?? null;
+  }
+
+  path.reverse();
+
+  const coords = path.map((id) => {
+    const n = g.nodes.find((n) => n.id === id)!;
+    return n.coord;
+  });
+
+  // afficher ligne
+  const src = map.getSource("route") as maplibregl.GeoJSONSource;
+if (!src) {
+  console.warn("Route source not ready");
+  return;
+}
+  src.setData({
     type: "FeatureCollection",
     features: [
       {
         type: "Feature",
-        properties: { profile, distance: route.distance, duration: route.duration },
-        geometry: route.geometry,
-      },
-    ],
-  };
-
-  const src = mapInstance.current.getSource("route") as maplibregl.GeoJSONSource;
-  src.setData(gj);
-
-  // --- Extraction des étapes ---
-  const stepsOut: NavStep[] = [];
-  let hasInaccessible = false;
-
-  for (const leg of route.legs || []) {
-    for (const step of leg.steps || []) {
-      const inst = step.maneuver?.instruction || "Continuez";
-      const low = inst.toLowerCase();
-
-      const hasStairs =
-        low.includes("stairs") ||
-        low.includes("escaliers") ||
-        low.includes("steps");
-
-      const notes: string[] = [];
-      if (hasStairs) notes.push("Escaliers détectés");
-
-      // PMR : supprimer les étapes impossibles
-      if (profile === "wheelchair" && hasStairs) {
-        hasInaccessible = true;
-        continue; // étape supprimée
+        geometry: { type: "LineString", coordinates: coords },
+        properties: {}
       }
+    ]
+  });
 
-      stepsOut.push({
-        instruction: inst,
-        distance: step.distance,
-        hasStairs,
-        notes: notes.length ? notes : undefined,
-      });
-    }
-  }
-
-  // --- Message PMR en haut ---
-  if (profile === "wheelchair") {
-    if (hasInaccessible) {
-      stepsOut.unshift({
-        instruction:
-          "⚠️ Trajet non entièrement accessible – escaliers détectés et supprimés.",
-        distance: 0,
-        hasStairs: true,
-        notes: ["Attention : ce trajet nécessite un chemin alternatif"],
-      });
-    } else {
-      stepsOut.unshift({
-        instruction: "♿ Trajet annoncé comme accessible",
-        distance: 0,
-        hasStairs: false,
-        notes: ["Itinéraire sans escaliers détectés"],
-      });
-    }
-  }
-
-  setSteps(stepsOut);
-
-  // --- Fit bounds ---
-  const coords = route.geometry.coordinates;
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  // zoom
+  let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
 
   for (const [x, y] of coords) {
     if (x < minX) minX = x;
@@ -617,14 +711,36 @@ async function buildRoute(profile: "foot" | "wheelchair" = "foot") {
     if (y > maxY) maxY = y;
   }
 
-  mapInstance.current.fitBounds(
-    [
-      [minX, minY],
-      [maxX, maxY],
-    ],
-    { padding: 80, duration: 500 }
-  );
+  map.fitBounds([[minX, minY], [maxX, maxY]], {
+    padding: 80,
+    duration: 500,
+  });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -668,6 +784,7 @@ async function buildRoute(profile: "foot" | "wheelchair" = "foot") {
     /* default */ "#ffffff"
   ],
   "fill-opacity": 0.8,
+  
 },
 
       });
@@ -852,6 +969,16 @@ try {
       map.setLayoutProperty("b-fill", "visibility", "none");
     }
     setIndoorVisible(true);
+    // CLEAR INDOOR ROUTE WHEN CHANGING FLOOR
+const routeSrc = map.getSource(INDOOR_ROUTE_SRC) as maplibregl.GeoJSONSource | undefined;
+if (routeSrc) {
+  routeSrc.setData({
+    type: "FeatureCollection",
+    features: [],
+  });
+}
+setSteps([]);
+
 
     if (fit) {
       const pts: number[][] = [];
@@ -919,6 +1046,9 @@ try {
       //{ name: "stairs", url: "/images/stairs.png" },
       { name: "toilet_access", url: "/images/toilet_access.png" },
      // { name: "default_marker", url: "/images/default_marker.png" }
+    
+  { name: "parking_access", url: "/images/parking_access.png" },
+  
     ];
 
     icons.forEach(({ name, url }) => {
@@ -944,31 +1074,70 @@ try {
     });
 
     map.on("load", async () => {
-  /* ------------------ LOAD PNG ICONS (elevator / stairs / toilet) ------------------ */
 
-/*const iconDefs: Record<string, string> = {
-  elevator: "/icons/elevator.png",
-  stairs: "/icons/stairs.png",
-  toilet_access: "/icons/toilet_access.png",
-  default_marker: "/icons/elevator.png",
-};
+await loadOutdoorGraph();
 
-for (const [name, url] of Object.entries(iconDefs)) {
-  if (map.hasImage(name)) continue;
 
-  map.loadImage(url, (err, image) => {
-    if (err || !image) {
-      console.error("Erreur loadImage pour", name, err);
-      return;
-    }
-    if (!map.hasImage(name)) {
-      map.addImage(name, image);
-      console.log("ICON OK:", name);
-    }
-  });
-}*/
 
         
+
+/* ------------------ OUTDOOR ACCESSIBLE POINTS ------------------ */
+try {
+  const outRes = await fetch("/data/outdoorPointAccessible.geojson");
+  if (outRes.ok) {
+    let outFc: any = await outRes.json();
+
+    // Si EPSG:3857 -> reprojection comme indoor
+    if (outFc?.crs?.properties?.name?.includes("3857")) {
+      outFc = reproject3857to4326(outFc);
+    }
+
+    const outData: GeoJSON.FeatureCollection = {
+      type: "FeatureCollection",
+      features: outFc.features,
+    };
+
+    // Créer source si elle n'existe pas encore
+    if (!map.getSource("OUTDOOR_ACCESS_SRC")) {
+      map.addSource("OUTDOOR_ACCESS_SRC", {
+        type: "geojson",
+        data: outData,
+      });
+
+      map.addLayer({
+        id: "outdoor-access",
+        type: "symbol",
+        source: "OUTDOOR_ACCESS_SRC",
+        layout: {
+          "icon-image": [
+            "match",
+            ["get", "type"],
+            "entrance_access", "entrance_access",
+            "parking_access", "parking_access",
+            "ramp", "ramp",
+
+            /* default */
+            "elevator"
+          ],
+          "icon-size": 0.06,
+          "icon-anchor": "center",
+          "icon-allow-overlap": true
+        }
+      });
+      
+    } else {
+      // Sinon juste mettre à jour
+      (map.getSource("OUTDOOR_ACCESS_SRC") as maplibregl.GeoJSONSource)
+        .setData(outData);
+    }
+
+  } else {
+    console.warn("outdoor-access.geojson introuvable");
+  }
+
+} catch (e) {
+  console.warn("Erreur chargement outdoor access:", e);
+}
 
 
     
@@ -1005,56 +1174,72 @@ try {
       const resp = await fetch("/data/buildings.geojson");
       const raw = await resp.json();
 
-      const filtered = (raw.features || []).filter((f: any) => {
-        const p = f.properties || {};
-        const name = (
-          p["name:fr"] ||
-          p["name:en"] ||
-          p.name ||
-          ""
-        ).toLowerCase();
-        const op = (p.operator || "").toLowerCase();
-        const inside = pointInPolygon(centroidOf(f), CAMPUS_POLYGON);
-        const text =
-          name.includes("university of ottawa") ||
-          name.includes("uottawa") ||
-          op.includes("university of ottawa");
-        return inside || text;
-      });
+      // Bâtiments
 
-      const feats = filtered.map((f: any, idx: number) => {
-        const p = f.properties || {};
-        const name = (
-          p["name:fr"] ||
-          p["name:en"] ||
-          p.name ||
-          ""
-        ).toLowerCase();
-        const op = (p.operator || "").toLowerCase();
-        const isUO =
-          name.includes("university of ottawa") ||
-          name.includes("uottawa") ||
-          op.includes("university of ottawa");
-        const area = bboxArea(f);
-        const areaNorm = Math.min(800, Math.round(area * 1e6));
-        const id = f.id ?? idx;
-        return {
-          ...f,
-          id,
-          properties: {
-            ...p,
-            __pri: (isUO ? 1000 : 0) + areaNorm,
-          },
-        };
-      });
 
-      const data = {
-        type: "FeatureCollection",
-        features: feats,
-      };
-      map.addSource("buildings", { type: "geojson", data });
+// Nouveau filtre propre
+const UO_KEYWORDS = [
+  "hall",
+  "Mann","Annex","Cf","Theo","Henderson residence","cby","minto",
+  "pavillon",
+  "pavilion","Colonel By Building","Tabaret Hall","Colonel By Hall (CBY)",
+  "residence",
+  "university",
+  "uottawa",
+  "tabaret",
+  "stem",
+  "site",
+  "mnt",
+  "dms",
+  "fss",
+  "science",
+  "engineering",
+  "simard",
+  "hamelin",
+  "perez",
+  "louis pasteur",
+  "lamoureux",
+  "crx",
+  "Careg",
+  "learning crossroad",
+  "lr",
+  "u-c",
+  "90u",
+  "rideau"
+];
 
-      setBuildingsFC(data as GeoJSON.FeatureCollection);
+const filtered = raw.features.filter((f) => {
+  const p = f.properties || {};
+  const name = (p["name:fr"] || p["name:en"] || p.name || "").toLowerCase();
+
+  return UO_KEYWORDS.some((k) => name.includes(k));
+});
+
+
+
+const feats = filtered.map((f: any, idx: number) => {
+  const p = f.properties || {};
+  const isKnown = UO_KEYWORDS.includes((p.code || "").toUpperCase());
+  const area = bboxArea(f);
+  const areaNorm = Math.min(800, Math.round(area * 1e6));
+  return {
+    ...f,
+    id: f.id ?? idx,
+    properties: {
+      ...p,
+      __pri: (isKnown ? 1000 : 0) + areaNorm,
+    },
+  };
+});
+
+const data = {
+  type: "FeatureCollection",
+  features: feats,
+};
+
+map.addSource("buildings", { type: "geojson", data });
+setBuildingsFC(data);
+
 
       map.addLayer({
         id: "b-fill",
@@ -1208,6 +1393,15 @@ try {
   return (
     <main className="w-screen h-screen relative bg-neutral-100">
       <div ref={mapRef} className="w-full h-full" />
+      {/* --- Logo UO-Navigate en bas à gauche --- */}
+<div className="absolute bottom-4 right-4 z-50 p-2 bg-white/90 rounded-xl shadow-md border border-neutral-300">
+  <img
+    src="/images/uo-navigate-logo.png"
+    alt="UO-Navigate Logo"
+    className="w-32 h-auto"
+  />
+</div>
+
 
       <Sidebar
         active={activeSection}
@@ -1238,6 +1432,8 @@ try {
             } else {
               hideIndoor();
             }
+            setShowBuildingsPanel(false);
+
           }}
         />
       )}
@@ -1273,8 +1469,13 @@ try {
           }}
           onSetStart={(p) => setStart(p)}
           onSetDest={(p) => setDest(p)}
-          onRouteFoot={() => buildRoute("foot")}
-          onRouteWheelchair={() => buildRoute("wheelchair")}
+          onRouteFoot={() => {
+  if (start && dest) buildOutdoorRoute(start, dest);
+}}
+onRouteWheelchair={() => {
+  if (start && dest) buildOutdoorRoute(start, dest);
+}}
+
           onClearRoute={() => {
             const src = mapInstance.current?.getSource(
               "route"
@@ -1296,7 +1497,23 @@ try {
             setStart(null);
             setDest(null);
           }}
-          onClose={() => setShowNavigatePanel(false)}
+          onClose={() => {
+  // appelle la fonction de réinitialisation
+  const m = mapInstance.current;
+  const src = m?.getSource("route") as maplibregl.GeoJSONSource | undefined;
+  src?.setData({ type: "FeatureCollection", features: [] });
+
+  const indoor = m?.getSource(INDOOR_ROUTE_SRC) as maplibregl.GeoJSONSource | undefined;
+  indoor?.setData({ type: "FeatureCollection", features: [] });
+
+  setSteps([]);
+  setStart(null);
+  setDest(null);
+
+  setShowNavigatePanel(false);
+}}
+
+          outdoorNodes={outdoorNodesList}
           //nouveau : navigation indoor
           indoorNodes={indoorNodesForUI}
           onIndoorRoute={(fromId: string, toId: string, accessible: boolean) =>

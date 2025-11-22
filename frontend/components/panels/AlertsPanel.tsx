@@ -232,7 +232,7 @@ export default function AlertsPanel({ onClose }: Props) {
 
         <button
           onClick={onClose}
-          className="rounded-lg px-2 py-1 text-xs hover:bg-neutral-100"
+          className="rounded-lg px-2 py-1 text-base hover:bg-neutral-100"
         >
           ✕
         </button>
@@ -254,8 +254,8 @@ export default function AlertsPanel({ onClose }: Props) {
             setShowForm((v) => !v);
             setSubmitMessage(null);
           }}
-          className="text-[11px] font-semibold px-3 py-1.5 rounded-lg
-            bg-neutral-800 text-white hover:bg-neutral-900"
+          className=" w-full  rounded-lg px-3 py-2 text-sm disabled:opacity-600 
+            bg-amber-300 text-neutral-900 hover:bg-amber-400"
         >
           Signaler une nouvelle alerte
         </button>
@@ -416,11 +416,11 @@ export default function AlertsPanel({ onClose }: Props) {
           className="w-full text-sm"
         />
         {fileName && (
-          <p className="text-xs text-neutral-600 mt-1">
+          <p className="text-base text-neutral-600 mt-1">
             Fichier sélectionné : <span className="font-medium">{fileName}</span>
           </p>
         )}
-        <p className="text-xs text-neutral-500 mt-1">
+        <p className="text-base text-neutral-500 mt-1">
           La photo aide les équipes à vérifier plus rapidement.
         </p>
       </div>
@@ -455,7 +455,7 @@ export default function AlertsPanel({ onClose }: Props) {
 
       {/* Chargement */}
       {loading && (
-        <div className="text-xs text-neutral-500 italic py-4">
+        <div className="text-base text-neutral-500 italic py-4">
           Chargement…
         </div>
       )}
@@ -463,7 +463,7 @@ export default function AlertsPanel({ onClose }: Props) {
       {/* Erreur */}
       {error && !loading && (
         <div className="
-          text-xs text-red-700 bg-red-50 border border-red-200
+          text-base text-red-700 bg-red-50 border border-red-200
           rounded-lg px-3 py-2
         ">
           {error}
@@ -473,7 +473,7 @@ export default function AlertsPanel({ onClose }: Props) {
       {/* Aucune alerte */}
       {!loading && !error && alerts.length === 0 && (
         <div className="
-          text-xs text-neutral-800 bg-neutral-100 border border-neutral-300
+          text-base text-neutral-800 bg-neutral-100 border border-neutral-300
           rounded-lg px-3 py-2
         ">
           Aucune alerte d’accessibilité active.
@@ -491,7 +491,7 @@ export default function AlertsPanel({ onClose }: Props) {
             <article
               key={a.id}
               className={`
-                border rounded-xl px-3 py-2.5 text-xs
+                border rounded-xl px-3 py-2.5 text-base
                 flex flex-col gap-1.5
                 ${severityClasses(sev)}
               `}
