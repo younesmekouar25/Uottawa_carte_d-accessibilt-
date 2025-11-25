@@ -1,0 +1,37 @@
+{
+  "alerts": [
+    {
+      "id": "alert-001",
+      "title": "Ascenseur principal hors service",
+      "message": "L’ascenseur central du rez-de-chaussée est actuellement en maintenance. Merci d’utiliser l’ascenseur secondaire près du local 037B.",
+      "severity": "danger",
+      "buildingCode": "UCU",
+      "buildingName": "University Centre",
+      "floor": 0,
+      "startsAt": "2025-02-12T09:15:00-05:00",
+      "endsAt": "2025-02-12T18:30:00-05:00"
+    },
+    {
+      "id": "alert-002",
+      "title": "Toilettes accessibles fermées temporairement",
+      "message": "Les toilettes accessibles près de la salle 08C sont fermées pour nettoyage intensif.",
+      "severity": "warning",
+      "buildingCode": "UCU",
+      "buildingName": "University Centre",
+      "floor": 0,
+      "startsAt": "2025-02-12T10:00:00-05:00",
+      "endsAt": "2025-02-12T11:30:00-05:00"
+    },
+    {
+      "id": "alert-003",
+      "title": "Circulation réduite dans le couloir 07",
+      "message": "Des travaux ralentissent fortement l’accès au couloir 07. Route alternative recommandée.",
+      "severity": "info",
+      "buildingCode": "UCU",
+      "buildingName": "University Centre",
+      "floor": 0,
+      "startsAt": "2025-02-11T08:00:00-05:00",
+      "endsAt": "2025-02-14T18:00:00-05:00"
+    }
+  ]
+}

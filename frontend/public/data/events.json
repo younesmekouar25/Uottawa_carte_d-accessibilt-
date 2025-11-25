@@ -1,0 +1,41 @@
+{
+  "events": [
+    {
+      "id": "event-001",
+      "title": "Atelier de relaxation — Espace bien-être",
+      "description": "Séance guidée de relaxation et techniques anti-stress. Accessible pour utilisateurs de fauteuil roulant.",
+      "buildingCode": "UCU",
+      "buildingName": "University Centre",
+      "floor": 0,
+      "startsAt": "2025-02-14T14:00:00-05:00",
+      "endsAt": "2025-02-14T15:00:00-05:00",
+      "impactsAccessibility": false,
+      "expectedCrowdLevel": "medium"
+    },
+    {
+      "id": "event-002",
+      "title": "Foire étudiante : forte affluence prévue",
+      "description": "Le hall principal accueillera plusieurs kiosques étudiants. Les corridors seront plus encombrés que d’habitude.",
+      "buildingCode": "UCU",
+      "buildingName": "University Centre",
+      "floor": 0,
+      "startsAt": "2025-02-15T09:00:00-05:00",
+      "endsAt": "2025-02-15T17:00:00-05:00",
+      "impactsAccessibility": true,
+      "impactDescription": "Circulation difficile pour les personnes à mobilité réduite.",
+      "expectedCrowdLevel": "high"
+    },
+    {
+      "id": "event-003",
+      "title": "Séance d’information — Services d’accessibilité",
+      "description": "Présentation des ressources d’accessibilité disponibles à l’Université d’Ottawa.",
+      "buildingCode": "STM",
+      "buildingName": "STEM Complex",
+      "floor": 1,
+      "startsAt": "2025-02-20T10:00:00-05:00",
+      "endsAt": "2025-02-20T11:00:00-05:00",
+      "impactsAccessibility": false,
+      "expectedCrowdLevel": "low"
+    }
+  ]
+}

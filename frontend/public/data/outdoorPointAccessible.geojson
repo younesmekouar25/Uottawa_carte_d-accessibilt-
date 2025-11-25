@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "name": "outdoor_access",
+  "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3857" } },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "ramp" },
+      "geometry": { "type": "Point", "coordinates": [ -8425082.55, 5688390.23 ] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "entrance_access" },
+      "geometry": { "type": "Point", "coordinates": [ -8425072.20, 5688380.77 ] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "parking_access" },
+      "geometry": { "type": "Point", "coordinates": [ -8425111.177,5688480.595 ] }
+    },
+     {
+      "type": "Feature",
+      "properties": { "type": "parking_access" },
+      "geometry": { "type": "Point", "coordinates": [-8425211.865,5688360.986] }
+    },
+     {
+      "type": "Feature",
+      "properties": { "type": "parking_access" },
+      "geometry": { "type": "Point", "coordinates": [-8424865.770,5688432.458] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "parking_access" },
+      "geometry": { "type": "Point", "coordinates": [-8425157.25,5688763.19] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "parking_access" },
+      "geometry": { "type": "Point", "coordinates": [-8425166.069,5688527.538] }
+    }
+
+  ]
+}

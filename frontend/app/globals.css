@@ -1,0 +1,9 @@
+/* Tailwind v4 import */
+@import "tailwindcss";
+
+/* Styles externes pour les cartes */
+@import "maplibre-gl/dist/maplibre-gl.css"; /* ou leaflet si tu l’utilises */
+@import "tailwindcss";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+

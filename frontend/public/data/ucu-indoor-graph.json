@@ -1,0 +1,50 @@
+{
+  "nodes": [
+    { "id": "014", "kind": "room", "floor": 0, "label": "Classroom 014", "coord": [-8425085.073, 5688275.746], "match": { "prop": "Classroom", "value": "014" }},
+    { "id": "Pivic", "kind": "room", "floor": 0, "label": "Pivic", "coord": [-8425033.0886,5688372.7471], "match": { "prop": "Classroom", "value": "Pivic" }},
+    { "id": "WC-men", "kind": "toilet", "floor": 0, "label": "Men toilet", "coord": [-8425059.2674, 5688298.4727], "match": { "prop": "toilet", "value": "Men toilet" }},
+    { "id": "WC-women", "kind": "toilet", "floor": 0, "label": "Women Toilet", "coord": [-8425059.2674, 5688298.4727], "match": { "prop": "toilet", "value": "Wemen Toilet" }},
+    { "id": "elevator2", "kind": "elevator", "floor": 0, "label": "Ascenseur 1 et 2", "coord": [-8425079.26424766, 5688325.532063184], "match": { "prop": "elevator", "value": "elevator2" }},
+    { "id": "elevator3", "kind": "elevator", "floor": 0, "label": "Ascenseur 3", "coord": [-8425077.97018,5688441.45344], "match": { "prop": "elevator", "value": "elevator 3" }},
+    { "id": "corr-main", "kind": "junction", "floor": 0, "label": "Couloir principal", "coord": null, "match": { "prop": "type", "value": "corridor" }},
+    { "id": "j0020", "kind": "junction", "floor": 0, "label": null, "coord": [-8425084.403549271, 5688285.972218166],  "hidden": true},
+    { "id": "j001", "kind": "junction", "floor": 0, "label": null, "coord": [-8425071.929184422, 5688292.579644295],  "hidden": true},
+    { "id": "j0018", "kind": "junction", "floor": 0, "label": null, "coord": [-8425078.479649981, 5688302.946468051],  "hidden": true},
+    { "id": "j002", "kind": "junction", "floor": 0, "label": null, "coord": [-8425083.378259009, 5688310.693105581],  "hidden": true},
+    { "id": "j003", "kind": "junction", "floor": 0, "label": null, "coord": [-8425068.264603386, 5688320.889366612],  "hidden": true},
+    { "id": "j004", "kind": "junction", "floor": 0, "label": null, "coord": [-8425073.514864188, 5688329.013857781],  "hidden": true},
+    { "id": "j0014", "kind": "junction", "floor": 0, "label":null, "coord": [-8425079.26424766, 5688325.532063184],  "hidden": true},
+    { "id": "j0021", "kind": "junction", "floor": 0, "label":null, "coord": [-8425060.537070405, 5688300.269321256],  "hidden": true}
+    ,{ "id": "j007", "kind": "junction", "floor": 0, "label":null, "coord": [ -8425033.706773608922958, 5688373.391974636353552 ],  "hidden": true}
+    ,{ "id": "j006", "kind": "junction", "floor": 0, "label": null, "coord": [ -8425062.142492702230811, 5688354.000500432215631 ],  "hidden": true}
+    ,{ "id": "j005", "kind": "junction", "floor": 0, "label": null, "coord":  [ -8425053.66351312212646, 5688340.932333034463227 ],  "hidden": true}
+
+  
+  
+  ],
+
+  "edges": [
+    { "from": "014", "to": "j0020" },
+    { "from": "j0020", "to": "j001" },
+    { "from": "j001",  "to": "j0018" },
+    { "from": "j001",  "to": "j0021" },
+
+    { "from": "j0018", "to": "j002" },
+    { "from": "j002",  "to": "j003" },
+    { "from": "j003",  "to": "j004" },
+
+    { "from": "j004",  "to": "elevator2" },
+
+    { "from": "Pivic", "to": "j007" },
+
+    { "from": "WC-men",   "to": "j0021" },
+    { "from": "WC-women", "to": "j0021" },
+    { "from": "elevator2", "to": "j004" },
+    { "from": "j007", "to": "elevator3" },
+
+    { "from": "j006", "to": "j007" },
+    { "from": "j005", "to": "j006" },
+    { "from": "j004", "to": "j005" }
+
+  ]
+}
